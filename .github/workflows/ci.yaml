@@ -56,9 +56,3 @@ jobs:
           format: table
           exit-code: 0
           severity: CRITICAL,HIGH
-
-      - name: Push images to GHCR
-        run: |
-          docker push ghcr.io/josipmaric557/ticketing-api:1.0
-          docker push ghcr.io/josipmaric557/ticketing-frontend:1.0
-          docker push ghcr.io/josipmaric557/ticketing-worker:1.0
