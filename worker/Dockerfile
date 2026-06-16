@@ -1,12 +1,8 @@
 FROM node:20-alpine
-
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm install
-
-RUN npm install -g nodemon
-
 COPY . .
-
-CMD ["npm", "run", "dev"]
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+CMD ["node", "worker.js"]
