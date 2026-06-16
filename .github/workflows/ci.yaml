@@ -1,0 +1,70 @@
+name: CI - Build, Scan and Push
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build API image
+        run: |
+          docker build -t ghcr.io/josipmaric557/ticketing-api:${{ github.sha }} ./api
+          docker tag ghcr.io/josipmaric557/ticketing-api:${{ github.sha }} ghcr.io/josipmaric557/ticketing-api:latest
+
+      - name: Build Frontend image
+        run: |
+          docker build -t ghcr.io/josipmaric557/ticketing-frontend:${{ github.sha }} ./frontend
+          docker tag ghcr.io/josipmaric557/ticketing-frontend:${{ github.sha }} ghcr.io/josipmaric557/ticketing-frontend:latest
+
+      - name: Build Worker image
+        run: |
+          docker build -t ghcr.io/josipmaric557/ticketing-worker:${{ github.sha }} ./worker
+          docker tag ghcr.io/josipmaric557/ticketing-worker:${{ github.sha }} ghcr.io/josipmaric557/ticketing-worker:latest
+
+      - name: Scan API image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/josipmaric557/ticketing-api:${{ github.sha }}
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+
+      - name: Scan Frontend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/josipmaric557/ticketing-frontend:${{ github.sha }}
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+
+      - name: Scan Worker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ghcr.io/josipmaric557/ticketing-worker:${{ github.sha }}
+          format: table
+          exit-code: 0
+          severity: CRITICAL,HIGH
+
+      - name: Push images to GHCR
+        run: |
+          docker push ghcr.io/josipmaric557/ticketing-api:${{ github.sha }}
+          docker push ghcr.io/josipmaric557/ticketing-api:latest
+          docker push ghcr.io/josipmaric557/ticketing-frontend:${{ github.sha }}
+          docker push ghcr.io/josipmaric557/ticketing-frontend:latest
+          docker push ghcr.io/josipmaric557/ticketing-worker:${{ github.sha }}
+          docker push ghcr.io/josipmaric557/ticketing-worker:latest
