@@ -22,8 +22,8 @@ spec:
           env:
             - name: FRONTEND_PORT
               value: "3000"
-            - name: API_URL
-              value: "http://api:8080"
+            - name: API_BASE_URL
+              value: "/api"
             - name: NODE_ENV
               valueFrom:
                 configMapKeyRef:
